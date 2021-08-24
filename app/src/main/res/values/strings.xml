@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Catching Game</string>
+    <string name="title_activity_game">GameActivity</string>
+    <string name="game_title">Catch The Spirit</string>
+    <string name="play_button">Play Game</string>
+    <string name="leader_board">Leader Board</string>
+    <string name="settings">Settings</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
