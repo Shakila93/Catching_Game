@@ -2,25 +2,42 @@ package com.Catchers.catchinggame;
 
 import android.annotation.SuppressLint;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.UserManager;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.Catchers.catchinggame.databinding.ActivityGameBinding;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -38,6 +55,12 @@ public class GameActivity extends AppCompatActivity {
      * user interaction before hiding the system UI.
      */
     private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+    private int score = 0;
+    private TextView scoreText;
+    private TextView timerText;
+    private View GameOverPanel;
+    private Button ReturnButton;
+
 
     /**
      * Some older devices needs a small delay between UI widget updates
@@ -47,6 +70,7 @@ public class GameActivity extends AppCompatActivity {
     private final Handler mHideHandler = new Handler(Looper.getMainLooper());
     private View mContentView;
     private FrameLayout Layout;
+
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -78,13 +102,55 @@ public class GameActivity extends AppCompatActivity {
 
     private List<SpiritTarget> targets = new ArrayList<>();
     private static final int FRAME_DELAY = 16;
+    private int time = 10000;
     private final Handler mLoopHandler = new Handler(Looper.getMainLooper());
+
     private final Runnable mMainLoop = new Runnable() {
         @Override
         public void run() {
+            time -= FRAME_DELAY;
+            if (time < 0){
+                for(int i = targets.size()-1; i >= 0; i--){
+                    SpiritTarget target = targets.get(i);
+                    targets.remove(i);
+                    getSupportFragmentManager().beginTransaction().remove(target).commit();
+
+                }
+                //doesnt show negetive number
+                timerText.setText("Time 00:00");
+                GameOverPanel.setVisibility(View.VISIBLE);
+                //connecting to the user service on the ddevice and geting user name
+                //UserManager userM = (UserManager)getApplicationContext().getSystemService(Context.USER_SERVICE);
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                // Create a new user with a first and last name
+                Map<String, Object> user = new HashMap<>();
+                //user.put("name", userM.getUserName());
+                user.put("name","Test");
+                user.put("score", score);
+                user.put("timestamp", Timestamp.now());
+
+                // Add a new document with a generated ID
+                db.collection("Leaderboard")
+                        .add(user)
+                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                            @Override
+                            public void onSuccess(DocumentReference documentReference) {
+                                Log.d("CatchingGame", "DocumentSnapshot added with ID: " + documentReference.getId());
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.w("CatchingGame", "Error adding document", e);
+                            }
+                        });
+                return;
+            }
+            timerText.setText(String.format(Locale.US, "Time 00:%02.0f", ((float)time)/1000));
             for(SpiritTarget target : targets) {
                 target.OnUpdate(0.016f);
             }
+
             mLoopHandler.postDelayed(mMainLoop, FRAME_DELAY);
         }
     };
@@ -122,25 +188,65 @@ public class GameActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         mVisible = true;
+        scoreText = findViewById(R.id.ScoreText);
+        timerText = findViewById(R.id.Timer);
         // Set up the user interaction to manually show or hide the system UI.
+        GameOverPanel = findViewById(R.id.GamePanel);
+        ReturnButton = findViewById(R.id.ReturnButton);
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        Layout = findViewById(R.id.GameSpace);
+        Layout = findViewById(R.id.GameActivity);
         //Layout.addView(SpiritTarget.newInstance().getView());
+       for(int i = 0; i < 10; i++) SpawnSpirit();
+
+        mLoopHandler.postDelayed(mMainLoop, FRAME_DELAY);
+        ReturnButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+    }
+    private void SpawnSpirit()
+    {
         FragmentManager FM = getSupportFragmentManager();
         FragmentTransaction FT = FM.beginTransaction();
         SpiritTarget ST = SpiritTarget.newInstance();
-        FT.add(R.id.GameSpace, ST, "Spirit");
+        FT.add(R.id.GameActivity, ST, "Spirit");
         FT.commit();
+        Random random = new Random();
 
         targets.add(ST);
-        ST.SetVelocity(50, 50);
+        ST.SetVelocity((random.nextInt(300) +150) *(random.nextInt(100)> 50?1:-1),
+                (random.nextInt(300) +150)*(random.nextInt(100)> 50?1:-1));
+        DisplayMetrics metrics= Resources.getSystem().getDisplayMetrics();
+        ST.SetPosition(random.nextInt(metrics.widthPixels),random.nextInt(metrics.heightPixels));
+        ST.setOnClick(new Runnable() {
+            @Override
+            public void run() {
+                //targets.remove(ST);
+                ST.getView().setVisibility(View.INVISIBLE);
+                score ++;
+                scoreText.setText(String.format(Locale.US,"Score: %d", score));
+                //remove from the screen
+                //getSupportFragmentManager().beginTransaction().remove(ST).commit();
+                mLoopHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ST.SetPosition(random.nextInt(metrics.widthPixels),random.nextInt(metrics.heightPixels));
+                        ST.SetVelocity((random.nextInt(300) +150) *(random.nextInt(100)> 50?1:-1),
+                                (random.nextInt(300) +150)*(random.nextInt(100)> 50?1:-1));
+                        ST.getView().setVisibility(View.VISIBLE);
+                    }
 
-        mLoopHandler.postDelayed(mMainLoop, FRAME_DELAY);
+                },1000);
+            }
+        });
+
+
     }
-
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
