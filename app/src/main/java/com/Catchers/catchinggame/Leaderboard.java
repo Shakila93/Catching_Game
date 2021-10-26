@@ -16,20 +16,23 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import org.w3c.dom.Text;
 
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class Leaderboard extends AppCompatActivity {
-
-    public  class Entry{
-        public String name;
-        public int score;
-        public Timestamp timestamp;
-        public Entry(){
-            name = "";
-            score = 0;
-            timestamp = Timestamp.now();
-        }
-    }
+//
+//    public  class Entry{
+//        public String name;
+//        public int score;
+//        public Timestamp timestamp;
+//        public Entry(){
+//            name = "";
+//            score = 0;
+//            timestamp = Timestamp.now();
+//        }
+//    }
     private TextView[] Names;
     private TextView[] Scores;
     private TextView[] Dates;
@@ -91,8 +94,13 @@ public class Leaderboard extends AppCompatActivity {
                          DocumentSnapshot entry = ScoreObject.get(i);
                          Names[i].setText(entry.get("name", String.class));
 
-                         Scores[i].setText(entry.get("score", String.class));
-                         Dates[i].setText(entry.get("timestamp", String.class));
+                         Scores[i].setText(entry.get("score", Long.class).toString());
+
+
+                         Timestamp Date = entry.get("timestamp", Timestamp.class);
+                        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+                         Dates[i].setText(dateFormat.format(Date.toDate()));
+
 
                      }
                      else{

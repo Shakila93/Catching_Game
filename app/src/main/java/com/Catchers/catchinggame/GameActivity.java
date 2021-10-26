@@ -55,6 +55,8 @@ public class GameActivity extends AppCompatActivity {
      * user interaction before hiding the system UI.
      */
     private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+
+    //game variables
     private int score = 0;
     private TextView scoreText;
     private TextView timerText;
@@ -79,6 +81,7 @@ public class GameActivity extends AppCompatActivity {
 
         }
     };
+    //handles when the action bar should show or not
     private View mControlsView;
     private final Runnable mShowPart2Runnable = new Runnable() {
         @Override
@@ -99,12 +102,13 @@ public class GameActivity extends AppCompatActivity {
         }
     };
 
-
+//list of clickable spirits
     private List<SpiritTarget> targets = new ArrayList<>();
-    private static final int FRAME_DELAY = 16;
-    private int time = 10000;
-    private final Handler mLoopHandler = new Handler(Looper.getMainLooper());
+    private static final int FRAME_DELAY = 16; //# of milisec between processing
+    private int time = 10000;  //# of milisec before the game is over
+    private final Handler mLoopHandler = new Handler(Looper.getMainLooper());  //what handles our main loop, allows to consistenly run on our specified time
 
+    //the runnable that performs our main loops. every frame delay mili sec
     private final Runnable mMainLoop = new Runnable() {
         @Override
         public void run() {
@@ -144,14 +148,15 @@ public class GameActivity extends AppCompatActivity {
                                 Log.w("CatchingGame", "Error adding document", e);
                             }
                         });
-                return;
+                return; //game over finishes
             }
+            //game play -116
             timerText.setText(String.format(Locale.US, "Time 00:%02.0f", ((float)time)/1000));
             for(SpiritTarget target : targets) {
                 target.OnUpdate(0.016f);
             }
 
-            mLoopHandler.postDelayed(mMainLoop, FRAME_DELAY);
+            mLoopHandler.postDelayed(mMainLoop, FRAME_DELAY);  //tells the loop handler to run in frame delay time
         }
     };
 
@@ -160,24 +165,24 @@ public class GameActivity extends AppCompatActivity {
      * system UI. This is to prevent the jarring behavior of controls going away
      * while interacting with activity UI.
      */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    if (AUTO_HIDE) {
-                        delayedHide(AUTO_HIDE_DELAY_MILLIS);
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    view.performClick();
-                    break;
-                default:
-                    break;
-            }
-            return false;
-        }
-    };
+//    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
+//        @Override
+//        public boolean onTouch(View view, MotionEvent motionEvent) {
+//            switch (motionEvent.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+//                    if (AUTO_HIDE) {
+//                        delayedHide(AUTO_HIDE_DELAY_MILLIS);
+//                    }
+//                    break;
+//                case MotionEvent.ACTION_UP:
+//                    view.performClick();
+//                    break;
+//                default:
+//                    break;
+//            }
+//            return false;
+//        }
+//    };
     private ActivityGameBinding binding;
 
     @Override
@@ -199,6 +204,8 @@ public class GameActivity extends AppCompatActivity {
         // while interacting with the UI.
         Layout = findViewById(R.id.GameActivity);
         //Layout.addView(SpiritTarget.newInstance().getView());
+
+        //number of spirit
        for(int i = 0; i < 10; i++) SpawnSpirit();
 
         mLoopHandler.postDelayed(mMainLoop, FRAME_DELAY);
