@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "638190959045",
+    "project_id": "catching-game-e9989",
+    "storage_bucket": "catching-game-e9989.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:638190959045:android:cdd0912c066f4e0f0bf3ac",
+        "android_client_info": {
+          "package_name": "com.Catchers.catchinggame"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "638190959045-tktopkiblruurvcbimv73d926l7qfddh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZf-2xgoPUK4SzZ-7v5DS-CJOknJ0Y5hE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "638190959045-tktopkiblruurvcbimv73d926l7qfddh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
