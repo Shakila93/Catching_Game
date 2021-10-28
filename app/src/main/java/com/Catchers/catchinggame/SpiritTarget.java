@@ -3,6 +3,7 @@ package com.Catchers.catchinggame;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Resources;
+import android.graphics.PointF;
 import android.opengl.Matrix;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +16,8 @@ import android.widget.ImageView;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+
+import java.security.InvalidParameterException;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -89,7 +92,10 @@ public class SpiritTarget extends Fragment {
        // getView().setTop((int)Math.round(Y));
     }
 
-    public void SetVelocity(int x, int y) {
+    public void SetVelocity(float x, float y) {
+        if(Math.abs(x)>1000 || Math.abs(y) > 1000){
+            throw new InvalidParameterException();
+        }
         this.xVelocity = x;
         this.yVelocity = y;
     }
@@ -117,5 +123,9 @@ public class SpiritTarget extends Fragment {
 
         getView().setTranslationX((int)Math.round(X));
         getView().setTranslationY((int)Math.round(Y));
+    }
+
+    public float[] GetVelocity() {
+        return new float[] {xVelocity, yVelocity};
     }
 }

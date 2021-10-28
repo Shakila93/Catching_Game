@@ -264,6 +264,7 @@ public class GameActivity extends AppCompatActivity {
         delayedHide(100);
     }
 
+    @SuppressLint("NewApi")
     private void toggle() {
         if (mVisible) {
             hide();
